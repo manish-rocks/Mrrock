@@ -1,0 +1,128 @@
+{% extends 'allrestaurants/base.html' %} {% block title %}Dashboard{% endblock %} {% block link %} {% endblock %} {% block content %}
+<style type="text/css">
+.jumbotron {
+    background-color: white;
+}
+
+.dashboard {
+    margin: 0px auto;
+    width: calc(100% - 40px);
+}
+
+p {
+    margin: 10px 0px !important;
+}
+
+#myTabContent {
+    background-color: #f6f6f6 !important;
+}
+
+.nav-tabs>.active {
+    background-color: #f6f6f6 !important;
+}
+
+.applicationheader {
+    padding: 10px;
+    vertical-align: middle;
+    font-size: 18px;
+}
+
+.applications {}
+</style>
+<div id="dashboard_table">
+    {% include 'allrestaurants/dashboard_table.html' %}
+</div>
+<div class="modal fade" id="edit-order" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <!-- modal header -->
+            <div class="modal-header text-center">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Order Detail</h4>
+            </div>
+            <!-- end of modal header -->
+            <div class="modal-body" id="order_edit_form">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cancel-order-modal" tabindex="1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Order Cancel modal
+            </div>
+            <div class="modal-body">
+                <form id="cancelorderform" action="{% url 'allrestaurants:cancelled'%}" class="form-horizontal ordercancel-form" method="post">
+                    {% csrf_token %}
+                    <div class="col-sm-10 col-sm-offset-1">
+                        <div class="form-group">
+                            <label for="cancel_reason">Reason of cancel The Order</label>
+                            <textarea type="text" class="form-control" name="cancel_reason"></textarea>
+                        </div>
+                    </div>
+                    <!-- <div id="refund">
+                        <div class="col-sm-10 col-sm-offset-1">
+                            <div class="form-group">
+                                <label for="refund_payment" for>Refund Payment</label>
+                                <input type="checkbox" name="refund_payment">
+                            </div>
+                        </div>
+                        <div class="col-sm-10 col-sm-offset-1">
+                            <div class="form-group">
+                                <label for="refund_payment">Refund Amount (optional*)</label>
+                                <input type="number" class="form-control" name="refund_amount" placeholder="*Amount for partial refund">
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="form-group">
+                        <div class="col-sm-10 col-sm-offset-4">
+                            <button class="btn btn-primary" onclick="cancelled()" data-dismiss="modal">Cancel Order</button>
+                            <button class="btn btn-primary closemodal" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block script %}
+<script>
+// socket = new WebSocket("ws://" + window.location.host + "/dashboard/");
+// socket.onmessage = function(e) {
+//     console.log('onmessage')
+//     alert(e.data);
+// }
+// socket.onopen = function() {
+//     console.log('onopen')
+//     socket.send("hello world");
+// }
+// // Call onopen directly if socket is already open
+// if (socket.readyState == WebSocket.OPEN) {
+//     console.log('socket.readyState')
+//     socket.onopen();
+// }
+function cancelled() {
+    console.log(orderID);
+    console.log($('#cancelorderform').serialize() + "&orderID=" + orderID);
+    $.ajax({
+        url: $('#cancelorderform').attr('action'),
+        type: 'POST',
+        data: $('#cancelorderform').serialize() + "&orderID=" + orderID,
+        // data: form.serialize(),
+        dataType: 'json',
+        success: function(data) {
+            $('#cancelorderform').trigger('reset');
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+            }
+        });
+    });
+};
+</script>
+{% endblock %}

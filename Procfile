@@ -1,0 +1,1 @@
+web: gunicorn raone.wsgi --log-file -

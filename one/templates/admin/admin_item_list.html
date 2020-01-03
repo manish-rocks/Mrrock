@@ -1,0 +1,176 @@
+{% extends 'allrestaurants/base.html' %}
+{% block title %}Restaurant List{% endblock %}
+
+{% block content %}
+
+<div class="container">
+	<div class="jumbotron">
+		<h4 class="text-center">All Items</h4>
+		<hr>
+
+		<table class="table table-striped">
+			<thead>
+      			<tr class="row">
+        			<th class="col-sm-1 text-center">Sr No.</th>
+                    <th class="col-sm-4">Items Name</th>
+                    <th class="col-sm-7"></th>
+      			</tr>
+    		</thead>
+    		<tbody>
+    		{% for item in items_list %}
+    			<tr class="row">
+                    <td class="col-sm-1 text-center" style= "vertical-align:middle;" >
+                        {{ forloop.counter }} {# starting index 1 #}    
+                    </td>
+    				<td class="col-sm-4" style= "vertical-align:middle;" ><h4>{{ item.name_of_item }}</h4></td>
+    				<td class="col-sm-7" style= "vertical-align:middle;" >
+                        <p class="pull-right">
+                            <button type="button" class="btn btn-info btn-sm get-item-detail" data-toggle="modal" id="{{ item.unique_id }}">get details</button>
+                    		<button type="button" class="btn btn-info btn-sm get-item-option-detail" data-toggle="modal" id="{{ item.unique_id }}">see options</button>
+    					</p>	
+					</td>					
+    			</tr>
+    		{% endfor %}
+    		</tbody>
+		</table>
+    </div>
+</div>
+<div id="item_detail" class="modal fade" role="dialog">
+  	<div class="modal-dialog">
+
+    <!-- Modal content-->
+    	<div class="modal-content">
+      		<div class="modal-header">
+        	<button type="button" class="close" data-dismiss="modal">&times;</button>
+        	<h4 class="modal-title" id="item_name"></h4>
+      		</div>
+      		<div class="modal-body">
+        	<table class="table table-striped">
+        	<tbody>
+                <tr>
+                    <td>Restaurant:</td>
+                    <td id="item_res"></td>
+                </tr>
+        		<tr>
+        			<td>Item Category:</td>
+        			<td id="item_cat"></td>
+        		</tr>
+                <tr>
+                    <td>Item Subcategory:</td>
+                    <td id="item_subcat"></td>
+                </tr>
+        	</tbody>
+        		
+        	</table>
+      		</div>
+      		<div class="modal-footer">
+        	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      		</div>
+    	</div>
+    </div>
+</div>
+<div id="item_option_detail" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+    <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title" id="item_name1"></h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped" id="option_table">
+                    <tbody>
+                        
+                    </tbody>              
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script >
+    $(".get-item-detail").click(function(e){
+        $("#item_detail").modal('show');
+        /*e.preventdefault();*/
+        item_id=this.id;
+        to_send = JSON.stringify({'id':item_id})
+        $.ajax({
+                    url: "{% url 'allrestaurants:get_item_detail' %}",
+                    type: 'POST',
+                    data: {'id':item_id},
+
+                    success: function(data){
+
+                        // console.log(data);
+                        var jsObject=JSON.parse(data["data"]);
+                        // console.log(jsObject);
+                        $('#item_name').text(jsObject[0]["fields"]["name_of_item"])
+                        $('#item_res').text(data["belong_to_restaurant"])
+                        $('#item_cat').text(data["belong_to_item_category"])
+                        $('#item_subcat').text(data["belong_to_item_subcategory"])
+
+                        // $("#contact").text(data['data']['contact']);
+                        // $("#res-name").text(data['data']['res-name']);
+                        // $("#res_detail").modal('show');   
+                    }
+                });
+        // restaurant_id=this.id;
+        // url="{% url 'allrestaurants:restaurant_list' %}"
+        // $.post(url,{'id':restaurant_id},function(data){
+        //     console.log(data['data']);
+        //     $("#contact").text(data['data']['contact']);
+        //     $("#res-name").text(data['data']['res-name']);
+        
+        // });
+    });
+    $(".get-item-option-detail").click(function(e){
+        $("#item_option_detail").modal('show');
+        $("#option_table tbody").empty();
+        /*e.preventdefault();*/
+        item_id=this.id;
+        to_send = JSON.stringify({'id':item_id})
+        $.ajax({
+                    url: "{% url 'allrestaurants:get_item_options_detail' %}",
+                    type: 'POST',
+                    data: {'id':item_id},
+
+                    success: function(data){
+
+                        // console.log(data);
+                        var jsObject=JSON.parse(data["data"]);
+                        // console.log(jsObject);
+                        $('#item_name1').text(data["item_name"])    
+                        Object.keys(jsObject).forEach(key => {
+                            $('#option_table tbody').append('<tr class="child"><td>'+jsObject[key]["fields"]["item_option_type"]+'</td></tr>')
+                            // console.log(key);          // the name of the current key.
+                            // console.log(jsObject[key]);   // the value of the current key.
+                        });
+                        
+                        // $('#item_cat1').text(data["belong_to_item_category"])
+                        // $('#item_subcat1').text(data["belong_to_item_subcategory"])
+
+                        // $("#contact").text(data['data']['contact']);
+                        // $("#res-name").text(data['data']['res-name']);
+                        // $("#res_detail").modal('show');   
+                    }
+                });
+        // restaurant_id=this.id;
+        // url="{% url 'allrestaurants:restaurant_list' %}"
+        // $.post(url,{'id':restaurant_id},function(data){
+        //     console.log(data['data']);
+        //     $("#contact").text(data['data']['contact']);
+        //     $("#res-name").text(data['data']['res-name']);
+        
+        // });
+    });
+</script>
+
+{% endblock %}
+
+

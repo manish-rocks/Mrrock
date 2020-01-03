@@ -1,0 +1,722 @@
+{% load allrestaurants_filters %}
+<style>
+.dashboard>tr{
+    min-height:200px !important;
+}
+</style>
+<div class="dashboard">
+    <div>
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#activeorders" data-toggle="tab" aria-expanded="true">Active Orders ({{active_orders.count}})</a></li>
+            <!-- <li class=""><a href="#dispatchedorders" data-toggle="tab" aria-expanded="false">Dispatched Orders ({{dispatched_orders.count}})</a></li> -->
+            <li class=""><a href="#completedorders" data-toggle="tab" aria-expanded="false">Completed Orders ({{delivered_orders.count}})</a></li>
+            <!-- <li class=""><a href="#diningorders" data-toggle="tab" aria-expanded="false">Dining Orders ({{dining_orders.count}})</a></li> -->
+            <li class=""><a href="#cancelledorders" data-toggle="tab" aria-expanded="false">Cancelled Orders ({{cancelled_orders.count}})</a></li>
+            <!-- <li class=""><a href="#forthcomingorders" data-toggle="tab" aria-expanded="false">Forthcoming Orders ({{forthcoming_orders.count}})</a></li> -->
+            <!-- <li class=""><a href="#pendingorders" data-toggle="tab" aria-expanded="false">Pending Orders ({{pending_orders.count}})</a></li> -->
+            <li class="" id="searchorder"><a href="#ordersearch" data-toggle="tab" aria-expanded="false">Order Search</a></li>
+        </ul>
+        <div id="myTabContent" class="tab-content" style="background-color:#ffffff;">
+            <div class="tab-pane fade active in" id="activeorders">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="heading-row">
+                            <th class="text-center">ORDER #</th>
+                            <th class="text-center">BOOKED/DELIVERY</th>
+                            <th class="text-center">ASSIGN</th>
+                            <th class="text-center">Assign TaskBoy</th>
+                            <th class="text-center">Assign DeliveryBoy</th>
+                            <!-- <th class="text-center">DELIVERED</th> -->
+                            <th class="text-center" style="display: none;">PAID</th>
+                            <th class="text-center">X</th>
+                            <th class="text-center">SOURCE</th>
+                            <th class="text-center">CONTACT PERSON</th>
+                            <th class="text-center">COST (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {%for order in active_orders%}
+                        <tr style="height: 250px">
+                            <th class="text-center" style="vertical-align:middle;">
+                                <a target="_blank" href="{% url 'allrestaurants:order_details' pk=order.unique_id%}">{{ order.unique_id }}</a><br>
+                                <a id="{{order.unique_id}}" class="btn btn-success btn-sm" data-toggle="modal" data-target="#edit-order" onclick='editOrderdetials(this)'><span class="glyphicon glyphicon-pencil"></span></a>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;">
+                                <p>
+                                    {{order.placed_at}} /
+                                    <br> {{order.expected_delivery_datetime}}
+                                    <br>
+                                </p>
+                                {% if order.delivered_at != None %}
+                                <p style="color:green">
+                                    Delivered
+                                    <br> {{order.delivered_at|date:"d M, f a"}}
+                                </p> {% else %}
+                                <div class="text-center timer countdown" data-countdown="{{order.expected_delivery_datetime|date:'M d, Y H:i:s'}}" style="font-size: 20px"></div>
+                                {% endif %}
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;width:110px">
+                                {% if order.restaurant_assigned_at == None %}
+                                <button id="{{ order.unique_id }}" class="btn btn-primary assignRestaurant" onclick='assignRestaurant(this)'>Assign</button>
+                                {% else %}
+                                    {% if order.taskboy_assigned_at == None and order.delboy_assigned_at == None %} 
+                                    <a id="{{ order.unique_id }}" class="glyphicon glyphicon-step-backward" onclick='rollbackassignRestaurant(this)'></a>
+                                    {% endif %}
+                                <p>{{order.restaurant_assigned_at|date:"f a"}}</p>
+                                <p class="rest_status" id="{{order.restaurant_accepted_at}}" data-toggle="tooltip" title="{{order.restaurant_accepted_at|date:" d M, f a "}}">
+                                    {{order.restaurant.name_of_restaurant|upper}}
+                                    <br>({{order.restaurant.contact_number}})
+                                </p>
+                                {% endif %}
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;width:270px">
+                                {% if order.restaurant_assigned_at != None %}
+                                    {% if order.delboy_assigned_at == None or order.task_assigned %}  <!-- applied proposition login-implication -->
+                                        {% if order.taskboy_assigned_at == None %} 
+                                            <select name="taskboy" style="background: transparent;" class="form-control taskboy" id="{{ order.unique_id }}" required>
+                                                <option id="plzselectDB" value="">Please select a Task Boy</option>
+                                                {%for delboy in delboys%}
+                                                <option id="{{ order.unique_id }}" value="{{delboy.loginid}}">{{delboy.first_name}} {{delboy.last_name}} {{delboy.mobile}}</option>
+                                                {%endfor%}
+                                            </select>
+                                            <br>
+                                            <button id="{{ order.unique_id }}" class="btn btn-primary assignTaskboy" onclick='assignTaskboy(this)' disabled>Assign</button>
+                                        {% else %}
+                                            {% if order.taskboy_collected_at == None %} 
+                                            <a id="{{ order.unique_id }}" class="glyphicon glyphicon-step-backward" onclick='rollbackassignTaskboy(this)'></a>
+                                            <select name="taskboy" style="background: transparent;" class="form-control taskboy" id="{{ order.unique_id }}" required>
+                                                <option id="plzselectDB" value="">Please select a Task Boy</option>
+                                                {%for delboy in delboys%}
+                                                <option id="{{ order.unique_id }}" value="{{delboy.loginid}}">{{delboy.first_name}} {{delboy.last_name}} {{delboy.mobile}}</option>
+                                                {%endfor%}
+                                            </select>
+                                            <br>
+                                            <button id="{{ order.unique_id }}" class="btn btn-primary assignTaskboy" onclick='assignTaskboy(this)' disabled>Assign</button>
+                                            <p style="color:red">{{order.taskboy.first_name}} {{order.taskboy.last_name}} {{order.taskboy.mobile}}<br>{{order.taskboy_assigned_at|date:"f a"}}</p>
+                                            <button id="{{ order.unique_id }}" class="btn btn-primary TBordercollected" onclick='TBordercollected(this)'>order collected</button>
+                                            {% else %}
+                                                {% if order.delboy_assigned_at == None %} 
+                                                <a id="{{ order.unique_id }}" class="glyphicon glyphicon-step-backward" onclick='rollbackTBordercollected   (this)'></a>
+                                                {% endif %}
+                                            <p style="color:green">{{order.taskboy.first_name}} {{order.taskboy.last_name}} {{order.taskboy.mobile}}<br>{{order.taskboy_assigned_at|date:"f a"}}</p>
+                                            
+                                            {% endif %} 
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %} 
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;width:270px">
+                                {% if order.restaurant_assigned_at != None %}
+                                    {% if order.taskboy_assigned_at == None or order.taskboy_collected_at != None %}  <!-- applied proposition login-implication -->
+                                        {% if order.delboy_assigned_at == None %} 
+                                        <select name="delboy" style="background: transparent;" delboyID="{{order.taskboy.loginid}}" class="form-control delboy delboyprefilled" id="{{ order.unique_id }}" required>
+                                            <option id="plzselectDB" value="">Please select a Delivery Boy</option>
+                                            {%for delboy in delboys%}
+                                            <option id="{{ order.unique_id }}" value="{{delboy.loginid}}">{{delboy.first_name}} {{delboy.last_name}} {{delboy.mobile}}</option>
+                                            {%endfor%}
+                                        </select>
+                                        <br>
+                                        <button id="{{ order.unique_id }}" delboyID="{{order.taskboy.loginid}}" class="btn btn-primary assignDelboy" onclick='assignDelboy(this)' disabled>Assign</button>
+                                        {% else %}
+                                            {% if order.deliverd_at == None %} 
+                                            <a id="{{ order.unique_id }}" class="glyphicon glyphicon-step-backward" onclick='rollbackassignDelboy(this)'></a>
+                                            {% endif %}
+                                        <select name="delboy" style="background: transparent;" class="form-control delboy" id="{{ order.unique_id }}" required>
+                                            <option id="plzselectDB" value="">Please select a Delivery Boy</option>
+                                            {%for delboy in delboys%}
+                                            <option id="{{ order.unique_id }}" value="{{delboy.loginid}}">{{delboy.first_name}} {{delboy.last_name}} {{delboy.mobile}}</option>
+                                            {%endfor%}
+                                        </select>
+                                        <br>
+                                        <button id="{{ order.unique_id }}" class="btn btn-primary assignDelboy" onclick='assignDelboy(this)' disabled>Assign</button>
+                                        <p style="color:red">{{order.delboy.first_name}} {{order.delboy.last_name}} {{order.delboy.mobile}}<br>{{order.delboy_assigned_at|date:"f a"}}</p>
+                                        <button id="{{ order.unique_id }}" class="btn btn-primary delivered" onclick='delivered(this)'>delivered</button>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %} 
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;">
+                                <a id="{{ order.unique_id }}" class="glyphicon glyphicon-remove" data-toggle="modal" data-target="#cancel-order-modal" onclick="setorderID('{{ order.unique_id }}')" style="color:red"> </a>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;">
+                                <p>Website</p>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;">
+                                <div style="height:70px; border-bottom: solid 1px #ddd;padding-bottom:10px;">
+                                    <p class="pull-left" style="margin: 0px !important">
+                                        {{order.customer_name|title}}-{{order.customer_mobile}} ({{order.customer_email}})
+                                    </p> 
+                                    <br>
+                                    <p class="pull-left" style="margin: 0px !important">{{order.order_special_request}}</p>
+                                    <br>
+                                    <p class="pull-left" style="margin: 0px !important">
+                                        {{order.delivery_type|title}}-{{order.payment_mode}}
+                                    </p>
+                                </div>
+                                <div style="height:40px; border-bottom: solid 1px #ddd">
+                                    <p class="pull-left">{{ order.delivery_address|string_to_obj|title }}</p>
+                                </div>
+                                <div style="height:120px;padding-top:10px">
+                                    <textarea class="internalchat pull-left" cols="87" rows="3" style="margin-bottom:10px"></textarea>
+                                    <input type="text" class="commentinput pull-left" style="width:calc(100% - 60px)" placeholder="enter comment">
+                                    <button class="pull-right" id="{{ order.unique_id }}" user-loginid="{{request.session.user.loginid}}" onclick='saveinternalcomment(this)'>send</button> 
+                                </div>
+                            </th>
+                        </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="completedorders">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="heading-row">
+                            <th class="text-center">ORDER #</th>
+                            <th class="text-center">BOOKED/DELIVERY</th>
+                            <th class="text-center">ASSIGN</th>
+                            <th class="text-center">Assign TaskBoy</th>
+                            <th class="text-center">Assign DeliveryBoy</th>
+                            <!-- <th class="text-center">DELIVERED</th> -->
+                            <th class="text-center" style="display: none;">PAID</th>
+                            <th class="text-center">X</th>
+                            <th class="text-center">SOURCE</th>
+                            <th class="text-center">CONTACT PERSON</th>
+                            <th class="text-center">COST (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {%for order in delivered_orders%}
+                        <tr style="height: 250px">
+                            <th class="text-center" style="vertical-align:middle;">
+                                <a target="_blank" href="{% url 'allrestaurants:order_details' pk=order.unique_id%}">{{ order.unique_id }}</a><br>
+                                <a id="{{ order.unique_id }}" class="glyphicon glyphicon-step-backward" onclick='rollbackDelivered(this)'></a>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;">
+                                <p>
+                                    {{order.placed_at}} /
+                                    <br> {{order.expected_delivery_datetime}}
+                                    <br>
+                                </p>
+                                {% if order.delivered_at != None %}
+                                <p style="color:green">
+                                    Delivered
+                                    <br> {{order.delivered_at|date:"d M, f a"}}
+                                </p> 
+                                {% endif %}
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;width:110px">
+                                
+                                <p>{{order.restaurant_assigned_at|date:"f a"}}</p>
+                                <p class="rest_status" id="{{order.restaurant_accepted_at}}" data-toggle="tooltip" title="{{order.restaurant_accepted_at|date:' d M, f a '}}">
+                                    {{order.restaurant.name_of_restaurant|upper}}
+                                    <br>
+                                    ({{order.restaurant.contact_number}})
+                                </p>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;width:270px">
+                                <p style="color:green">{{order.taskboy.first_name}} {{order.taskboy.last_name}} {{order.taskboy.mobile}}<br>{{order.taskboy_assigned_at|date:"f a"}}</p>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;width:270px">
+                                <p style="color:green">{{order.delboy.first_name}} {{order.delboy.last_name}} {{order.delboy.mobile}}<br>{{order.delboy_assigned_at|date:"f a"}}</p>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;">
+                                <a id="{{ order.unique_id }}" class="glyphicon glyphicon-remove" data-toggle="modal" data-target="#cancel-order-modal" onclick="setorderID('{{ order.unique_id }}')" style="color:red"> </a>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;">
+                                <p>Website</p>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;">
+                                <div style="height:70px; border-bottom: solid 1px #ddd;padding-bottom:10px;">
+                                    <p class="pull-left" style="margin: 0px !important">
+                                        {{order.customer_name|title}}-{{order.customer_mobile}} ({{order.customer_email}})
+                                    </p> 
+                                    <br>
+                                    <p class="pull-left" style="margin: 0px !important">{{order.order_special_request}}</p>
+                                    <br>
+                                    <p class="pull-left" style="margin: 0px !important">
+                                        {{order.delivery_type|title}}-{{order.payment_mode}}
+                                    </p>
+                                </div>
+                                <div style="height:40px; border-bottom: solid 1px #ddd">
+                                    <p class="pull-left">{{ order.delivery_address|string_to_obj|title }}</p>
+                                </div>
+                                <div style="height:120px;padding-top:10px">
+                                    <textarea class="internalchat pull-left" cols="87" rows="3" style="margin-bottom:10px"></textarea>
+                                    <input type="text" class="commentinput pull-left" style="width:calc(100% - 60px)" placeholder="enter comment">
+                                    <button class="pull-right" id="{{ order.unique_id }}" user-loginid="{{request.session.user.loginid}}" onclick='saveinternalcomment(this)'>send</button>
+                                </div>
+                            </th>
+                        </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="cancelledorders">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="heading-row">
+                            <th class="text-center">ORDER #</th>
+                            <th class="text-center">BOOKED/DELIVERY</th>
+                            <th class="text-center">ASSIGN</th>
+                            <th class="text-center">Assign TaskBoy</th>
+                            <th class="text-center">Assign DeliveryBoy</th>
+                            <!-- <th class="text-center">DELIVERED</th> -->
+                            <th class="text-center" style="display: none;">PAID</th>
+                            <th class="text-center">Cancelled</th>
+                            <th class="text-center">SOURCE</th>
+                            <th class="text-center">CONTACT PERSON</th>
+                            <th class="text-center">COST (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                          {%for order in cancelled_orders%}
+                        <tr style="height: 250px">
+                            <th class="text-center" style="vertical-align:middle;">
+                                <a target="_blank" href="{% url 'allrestaurants:order_details' pk=order.unique_id%}">{{ order.unique_id }}</a><br>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;">
+                                <p>
+                                    {{order.placed_at}} /
+                                    <br> {{order.expected_delivery_datetime}}
+                                    <br>
+                                </p>
+                                {% if order.delivered_at != None %}
+                                <p style="color:green">
+                                    Delivered
+                                    <br> {{order.delivered_at|date:"d M, f a"}}
+                                </p> 
+                                {% endif %}
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;width:110px">
+                                
+                                <p>{{order.restaurant_assigned_at|date:"f a"}}</p>
+                                <p class="rest_status" id="{{order.restaurant_accepted_at}}" data-toggle="tooltip" title="{{order.restaurant_accepted_at|date:' d M, f a '}}">
+                                    {{order.restaurant.name_of_restaurant|upper}}
+                                    <br>
+                                    ({{order.restaurant.contact_number}})
+                                </p>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;width:170px">
+                                <p style="color:green">{{order.taskboy.first_name}} {{order.taskboy.last_name}} {{order.taskboy.mobile}}<br>{{order.taskboy_assigned_at|date:"f a"}}</p>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;width:170px">
+                                <p style="color:green">{{order.delboy.first_name}} {{order.delboy.last_name}} {{order.delboy.mobile}}<br>{{order.delboy_assigned_at|date:"f a"}}</p>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;width:200px">
+                                <a id="{{ order.unique_id }}" class="glyphicon glyphicon-step-backward" onclick='rollbackCancelled(this)'></a>
+                                <br>
+                                {{order.cancelled_reason}}
+                                <br>
+                                {{order.cancelled_at|date:"f a"}}
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;">
+                                <p>Website</p>
+                            </th>
+                            <th class="text-center" style="vertical-align:middle;">
+                                <div style="height:70px; border-bottom: solid 1px #ddd;padding-bottom:10px;">
+                                    <p class="pull-left" style="margin: 0px !important">
+                                        {{order.customer_name|title}}-{{order.customer_mobile}} ({{order.customer_email}})
+                                    </p> 
+                                    <br>
+                                    <p class="pull-left" style="margin: 0px !important">{{order.order_special_request}}</p>
+                                    <br>
+                                    <p class="pull-left" style="margin: 0px !important">
+                                        {{order.delivery_type|title}}-{{order.payment_mode}}
+                                    </p>
+                                </div>
+                                <div style="height:40px; border-bottom: solid 1px #ddd">
+                                    <p class="pull-left">{{ order.delivery_address|string_to_obj|title }}</p>
+                                </div>
+                                <div style="height:120px;padding-top:10px">
+                                    <textarea class="internalchat pull-left" cols="87" rows="3" style="margin-bottom:10px"></textarea>
+                                    <input type="text" class="commentinput pull-left" style="width:calc(100% - 60px)" placeholder="enter comment">
+                                    <button class="pull-right" id="{{ order.unique_id }}" user-loginid="{{request.session.user.loginid}}" onclick='saveinternalcomment(this)'>send</button>
+                                </div>
+                            </th>
+                        </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script>
+
+var orderID;
+// var taskboyID;
+// var delboyID;
+
+function saveinternalcomment(element) {
+    orderID = $(element).attr("id")
+    var userloginid = $(element).attr("user-loginid")
+    var chat = $(element).siblings('textarea.internalchat').val()
+    var comment = userloginid + ": " + $(element).siblings('input.commentinput').val().trim() + "\n"
+    console.log(orderID)
+    if($(element).siblings('input.commentinput').val().trim()){
+        $(element).siblings('textarea.internalchat').val(chat + comment) 
+    }
+    $(element).siblings('input.commentinput').val('')
+    // console.log(comment)
+    // $.ajax({
+    //     url: "{% url 'allrestaurants:order_edit_form'%}",
+    //     type: 'POST',
+    //     data: { "orderID": orderID },
+    //     success: function(data) {
+    //         // console.log(data);
+    //         $('#order_edit_form').html(data);
+    //     }
+    // });
+};
+
+function editOrderdetials(element) {
+    orderID = $(element).attr("id")
+    console.log(orderID)
+    $.ajax({
+        url: "{% url 'allrestaurants:order_edit_form'%}",
+        type: 'POST',
+        data: { "orderID": orderID },
+        success: function(data) {
+            // console.log(data);
+            $('#order_edit_form').html(data);
+        }
+    });
+};
+
+function assignRestaurant(element) {
+    orderID = $(element).attr("id")
+    console.log(orderID)
+    $.ajax({
+        url: "{% url 'allrestaurants:assign_restaurant'%}",
+        type: 'POST',
+        data: { "orderID": orderID },
+        success: function(data) {
+            // console.log(data);
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+            }
+        });
+    });
+};
+
+function rollbackassignRestaurant(element) {
+    orderID = $(element).attr("id")
+    console.log(orderID)
+    $.ajax({
+        url: "{% url 'allrestaurants:clear_assign_restaurant'%}",
+        type: 'POST',
+        data: { "orderID": orderID },
+        success: function(data) {
+            // console.log(data);
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+            }
+        });
+    });
+};
+
+function assignTaskboy(element) {
+    orderID = $(element).attr("id")
+    var taskboyID = $(element).siblings('select').find(":selected").val()
+    console.log(orderID)
+    $.ajax({
+        url: "{% url 'allrestaurants:assign_taskboy'%}",
+        type: 'POST',
+        data: { "orderID": orderID,"taskboyID": taskboyID },
+        success: function(data) {
+            // console.log(data);
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+            }
+        });
+    });
+};
+
+function rollbackassignTaskboy(element) {
+    orderID = $(element).attr("id")
+    console.log(orderID)
+    $.ajax({
+        url: "{% url 'allrestaurants:clear_assign_taskboy'%}",
+        type: 'POST',
+        data: { "orderID": orderID },
+        success: function(data) {
+            // console.log(data);
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+            }
+        });
+    });
+};
+
+function TBordercollected(element) {
+    orderID = $(element).attr("id")
+    var delboyID
+    console.log(orderID)
+    $.ajax({
+        url: "{% url 'allrestaurants:taskboy_order_collected'%}",
+        type: 'POST',
+        data: { "orderID": orderID },
+        success: function(data) {
+            // console.log(data);
+            delboyID = data['taskboyID']
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+                // console.log($("select#"+orderID+" > option[value='"+taskboyID+"']"))
+                $("select#"+orderID+" > option[value='"+delboyID+"']").attr('selected','selected');
+                $("button#" + orderID+".assignDelboy").attr("disabled", false)
+            }
+        });
+    });
+};
+
+function rollbackTBordercollected(element) {
+    orderID = $(element).attr("id")
+    console.log(orderID)
+    $.ajax({
+        url: "{% url 'allrestaurants:clear_taskboy_order_collected'%}",
+        type: 'POST',
+        data: { "orderID": orderID },
+        success: function(data) {
+            // console.log(data);
+            // delboyID = data['taskboyID']
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+                // console.log($("select#"+orderID+" > option[value='"+taskboyID+"']"))
+                // $("select#"+orderID+" > option[value='"+delboyID+"']").attr('selected','selected');
+                // $("button#" + orderID+".assignDelboy").attr("disabled", false)
+            }
+        });
+    });
+};
+
+function assignDelboy(element) {
+    orderID = $(element).attr("id")
+    var delboyID = $(element).siblings('select').find(":selected").val()
+
+    console.log(orderID)
+    console.log(delboyID)
+    $.ajax({
+        url: "{% url 'allrestaurants:assign_delboy'%}",
+        type: 'POST',
+        data: { "orderID": orderID,"delboyID": delboyID },
+        success: function(data) {
+            // console.log(data);
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+            }
+        });
+    });
+};
+
+function rollbackassignDelboy(element) {
+    orderID = $(element).attr("id")
+    console.log(orderID)
+    $.ajax({
+        url: "{% url 'allrestaurants:clear_assign_delboy'%}",
+        type: 'POST',
+        data: { "orderID": orderID },
+        success: function(data) {
+            // console.log(data);
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+            }
+        });
+    });
+};
+
+function delivered(element) {
+    orderID = $(element).attr("id")
+    console.log(orderID)
+    $.ajax({
+        url: "{% url 'allrestaurants:delivered'%}",
+        type: 'POST',
+        data: { "orderID": orderID },
+        success: function(data) {
+            // console.log(data);
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+            }
+        });
+    });
+};
+
+function rollbackDelivered(element) {
+    orderID = $(element).attr("id")
+    console.log(orderID)
+    $.ajax({
+        url: "{% url 'allrestaurants:clear_delivered'%}",
+        type: 'POST',
+        data: { "orderID": orderID },
+        success: function(data) {
+            // console.log(data);
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+            }
+        });
+    });
+};
+
+function rollbackCancelled(element) {
+    orderID = $(element).attr("id")
+    console.log(orderID)
+    $.ajax({
+        url: "{% url 'allrestaurants:clear_cancelled'%}",
+        type: 'POST',
+        data: { "orderID": orderID },
+        success: function(data) {
+            // console.log(data);
+        }
+    }).done(function() {
+        $.ajax({
+            url: "{% url 'allrestaurants:dashboard_table' %}",
+            success: function(data) {
+                $('#dashboard_table').html(data);
+            }
+        });
+    });
+};
+
+function setorderID(element) {
+    orderID = element
+    console.log(orderID)
+};
+
+$('select.taskboy').on('change', function() {
+    // console.log($(this).find(":selected"))
+    orderID = $(this).find(":selected").attr('id')
+    // var taskboyID = $(this).find(":selected").val()
+    if (orderID != $("#plzselectDB").attr('id')) {
+        // console.log(orderID)
+        // console.log(taskboyID)
+        $("button#" + orderID+".assignTaskboy").attr("disabled", false)
+    }
+    // else{
+    //     console.log(orderID)
+    //     $("#taskboy-"+orderID).attr("disabled", true);
+    // }
+})
+
+$('select.delboy').on('change', function() {
+    // console.log($(this).find(":selected"))
+    orderID = $(this).find(":selected").attr('id')
+    // var delboyID = $(this).find(":selected").val()
+    if (orderID != $("#plzselectDB").attr('id')) {
+        // console.log(orderID)
+        // console.log(delboyID)
+        $("button#" + orderID+".assignDelboy").attr("disabled", false)
+    }
+    // else{
+    //     console.log(orderID)
+    //     $("#taskboy-"+orderID).attr("disabled", true);
+    // }
+})
+
+$('select.delboyprefilled').each(function() {
+    orderID = $(this).attr('id')
+    var delboyID = $(this).attr("delboyID")
+    console.log(delboyID)
+    if(delboyID){
+        // console.log($(this).find("option[value='"+taskboyID+"']"))
+        $(this).find("option[value='"+delboyID+"']").attr('selected','selected');
+        $("button#" + orderID+".assignDelboy").attr("disabled", false)
+    }
+});
+
+$(".rest_status").each(function() {
+    var expected_time = $(this).attr("id")
+    // console.log(expected_time)
+    if (expected_time == "None") {
+        $(this).css("color", "red")
+    } else {
+        $(this).css("color", "green")
+    }
+
+});
+
+$('[data-toggle="tooltip"]').tooltip();
+
+var x = setInterval(function() {
+
+    $(".countdown").each(function() {
+        var expected_time = $(this).attr("data-countdown")
+        // console.log(expected_time)
+        var countDownDate = new Date(expected_time).getTime();
+        // console.log(countDownDate)
+        // Get todays date and time
+        var now = new Date().getTime();
+        // console.log(now)
+
+        // Find the distance between now an the count down date
+        var distance = countDownDate - now;
+        // console.log(distance)
+
+        if (distance > 0) {
+            // Time calculations for days, hours, minutes and seconds
+            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Output the result in an element with id="demo"
+            $(this)[0].innerHTML = days + ": " + hours + ": " +
+                minutes + ": " + seconds + " ";
+            $(this).css("color", "green")
+        } else {
+            // Time calculations for days, hours, minutes and seconds
+            var days = Math.floor(-distance / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((-distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((-distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((-distance % (1000 * 60)) / 1000);
+
+            // Output the result in an element with id="demo"
+            $(this)[0].innerHTML = "- " + days + ": " + hours + ": " +
+                minutes + ": " + seconds + " ";
+            $(this).css("color", "red")
+        }
+    });
+}, 1000);
+</script>
+{% endblock %}

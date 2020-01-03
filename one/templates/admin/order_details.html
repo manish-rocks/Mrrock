@@ -1,0 +1,153 @@
+{% extends 'allrestaurants/base.html' %}
+{% load allrestaurants_filters %}
+ {% block title %}Order Details{% endblock %} {% block link %} {% endblock %} {% block content %}
+<style type="text/css">
+.jumbotron {
+    background-color: white;
+}
+
+p {
+    margin: 10px 0px !important;
+}
+
+.applicationheader {
+    padding: 10px;
+    vertical-align: middle;
+    font-size: 18px;
+}
+
+.wizard {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #F5F5F5;
+    height: 10px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-box-shadow: inset 0px 1px 0px 0px #CCC;
+    box-shadow: inset 0px 1px 0px 0px #CCC;
+    list-style: none;
+    margin-bottom: 40px;
+    margin-top: 25px;
+}
+
+.wizard li {
+    display: table-cell;
+    width: 1%;
+    float: none;
+    text-align: center;
+}
+
+.wizard li span {
+    display: block;
+    width: 30px;
+    height: 25px;
+    background: #F5F5F5;
+    text-align: center;
+    color: #999;
+    margin: auto;
+    margin-top: -10px;
+    padding-top: 5px;
+    font-size: 1.1em;
+    font-weight: bold;
+    -webkit-border-radius: 15px;
+    border-radius: 15px;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+    -webkit-text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0px 1px 0px 0px rgba(0, 0, 0, 0.15);
+    -webkit-box-shadow: inset 0px 1px 0px 0px rgba(0, 0, 0, 0.15);
+}
+
+.wizard li.active span {
+    background: #0088CC;
+    color: #FFF;
+}
+
+.applications {}
+</style>
+<div class="container">
+    <div class="jumbotron applicationheader">
+        <div class="row">
+            <span class="glyphicon glyphicon-list-alt"></span> &nbsp; Order Details
+            <!-- <p class="col-sm-11"></p> -->
+        </div>
+    </div>
+    <div class="jumbotron applications">
+        <div class="row">
+            <ul class="wizard">
+                <li class="{% if order.current_order_status == order_status.P%}active{% endif %}">
+                    <span>1</span>Booked
+                    <br>{{order.placed_at|date:"d M, f a"}}
+                </li>
+                <li class="{% if order.current_order_status == order_status.AtR%}active{% endif %}">
+                    <span>2</span>Assigned to Restaurant
+                    <br>{{order.restaurant_assigned_at|date:"d M, f a"}}
+                </li>
+                <!-- 
+				    <li class="{% if order.order_status == order_status.AbR%}active{% endif %}">
+				    	<span>3</span>Accepted by Restaurant <br>{{order.restaurant_accepted_at|date:"d M, f a"}}
+				    </li> -->
+                <li class="{% if order.current_order_status == order_status.AtTB%}active{% endif %}">
+                    <span>4</span>TaskBoy Assigned
+                    <br>{{order.taskboy_assigned_at|date:"d M, f a"}}
+                </li>
+                <li class="{% if order.current_order_status == order_status.CbTB%}active{% endif %}">
+                    <span>5</span>Task Completed
+                    <br>{{order.taskboy_collected_at|date:"d M, f a"}}
+                </li>
+                <li class="{% if order.current_order_status == order_status.AtDB%}active{% endif %}">
+                    <span>6</span>DeliveryBoy Assigned
+                    <br>{{order.delboy_assigned_at|date:"d M, f a"}}
+                </li>
+                <li class="{% if order.current_order_status == order_status.D%}active{% endif %}">
+                    <span>7</span>Delivered
+                    <br>{{order.delivered_at|date:"d M, f a"}}
+                </li>
+            </ul>
+        </div>
+        <br>
+        <div id="printableArea" class="printablediv" style="">
+            <div class="row table-responsive" style="margin-left: 5px;">
+                <table class="table table-bordered" border="1 px">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <b>{{order.restaurant|title}}</b>
+                                <br/>{{order.restaurant.address}}
+                             
+                                <br/> {{order.restaurant.contact_number}}
+                              
+                                <br/>{{order.restaurant.email}}
+                                <br/>
+                            </td>
+                            <td>
+                                <b>BUYER</b>
+                                <br/> {{order.customer_name|title}}
+                                <br/> {{order.customer_mobile}}
+                                <br/> {{order.delivery_address|string_to_obj|title }}
+                                <br/> <b>Comment:</b> {{order.order_special_request}}
+                                <br>
+                                <b>Payment Mode :</b>{{order.payment_mode}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Order Number: </b>{{order.unique_id}}
+                                <br/>
+                                <b>Order Date: </b>{{order.placed_at}}
+                                <br>
+                            </td>
+                            <td>
+                                <b>Delivery Type :</b>{{order.delivery_type}}
+                                <br/>
+                                <b>Delivery Date :</b>{{order.delivered_at|default_if_none:order.expected_delivery_datetime}}
+                                <br>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!--Item description-->
+        </div>
+    </div>
+    {% endblock %}

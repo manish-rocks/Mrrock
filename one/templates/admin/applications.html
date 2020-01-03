@@ -1,0 +1,35 @@
+{% extends 'allrestaurants/base.html' %} {% block title %}Applications{% endblock %} {% block link %} {% endblock %} {% block content %}
+<style type="text/css">
+.jumbotron{
+	background-color:white;
+}
+
+p{
+	margin:10px 0px !important;
+}
+.applicationheader{
+	padding:10px;
+	vertical-align: middle;
+	font-size: 18px;
+}
+.applications{
+	
+}
+</style>
+<div class="container">
+    <div class="jumbotron applicationheader">
+    	<div class="row">
+          	<span class="glyphicon glyphicon-th"></span> &nbsp; Applications
+        	<!-- <p class="col-sm-11"></p> -->
+    	</div>
+    </div>
+    <div class="jumbotron applications">
+        <div class="row">
+            <button class="btn btn-primary"><a href="{% url 'allrestaurants:add_restaurant_page'%}" style="color:white;">Add Restaurant</a></button>
+            <button class="btn btn-primary"><a href="{% url 'allrestaurants:restaurant_list'%}" style="color:white;">All Restaurants</a></button>
+            <button class="btn btn-primary"><a href="{% url 'allrestaurants:create_account'%}" style="color:white;">Create Account</a></button>
+            <button class="btn btn-primary"><a href="{% url 'allrestaurants:all_accounts'%}" style="color:white;">All Account</a></button>
+        </div>
+    </div>
+</div>
+{% endblock %}

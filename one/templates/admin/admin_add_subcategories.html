@@ -1,0 +1,376 @@
+{% extends 'allrestaurants/base.html' %}
+{% block title %}Add Item SubCategory{% endblock %}
+
+{% block link %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+ 
+<style type="text/css">
+
+label.left {
+    margin:0 auto;
+    display: block;
+    line-height: 30px;
+    vertical-align: middle;   
+    font-size: 15px  
+}
+.right {
+    width:20px;
+    margin:0 auto;
+    height: 20px;
+    display: inline;
+    line-height: 200px;
+    vertical-align: middle;
+}
+.veg{
+	color: green;
+}
+.nonveg{
+	color: red;
+}
+.icon-stack-1x,
+.icon-stack-2x {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  
+}
+.icon-stack-1x {
+  line-height: inherit;
+
+}
+.icon-stack-2x {
+  font-size: 1.6em;
+}
+.modal-btn
+    {
+        margin:5px;
+    }
+</style>
+
+<div class="container">
+	<div class="jumbotron">
+		<h4 class="text-center"> Add Item Subcategory Details </h4>
+		<hr>
+		<p>Restaurant Name : <a href="{% url 'allrestaurants:restaurant_list'%}">{{ categ_name.restaurant }}</a></p>
+		<p>Item Category : <a href="{% url 'allrestaurants:add_itemcategory_page' pk=categ_name.restaurant.unique_id  %}">{{ categ_name }}</a></p>
+		<form id="subcategform" class="form-horizontal" action="{% url 'allrestaurants:save_itemsubcategory' pk=categ_id %}" method="post" autocomplete="off">
+			{% csrf_token %}
+			<div class="form-group row">
+				<div class="col-sm-2">
+					<label class="left pull-right" for="name">SubCategory Name:</label>
+				</div>
+				<div class="col-sm-8" >
+					<input type="text" class="form-control " id="name" name="subcategory_name" required autofocus>
+				</div>
+				<!-- {% if not categ_name.is_vegetarian and not categ_name.is_nonvegetarian %}
+				<div class="col-sm-2  " >
+					<div class="text-center">
+	  					<label for="checkbox1" class="left">Veg: <input id="checkbox1" class="right" type="checkbox" name="subcategory_type"  value="veg"></label>
+		 			</div>
+				</div>
+				<div class="col-sm-2  " >
+					<div class="text-center">
+	  					<label for="checkbox11" class="left"> NonVeg: <input id="checkbox11" class="right" type="checkbox" name="subcategory_type" value="nonveg" ></label>
+		 			</div>
+				</div>
+				{% endif %} -->
+			</div>
+			<div class="form-group row  ">
+				<div class="col-sm-2">
+					<label class=" left pull-right " for="disc">Description :</label>
+				</div>
+				<div class="col-sm-8">
+					<input type="text" class="form-control " id="disc" name="description" >
+				</div>
+				<div class="col-sm-2 text-center">
+					<button type="submit" class="btn btn-info pull-right">Submit</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="container">
+	<div class="jumbotron">
+		<h4 class="text-center">Item SubCategories</h4>
+		<hr>
+	    <div id="plz_update">
+	    	{% include 'allrestaurants/admin_add_subcategories_table.html' %}
+	    </div>
+    </div>
+</div>
+<div id="edit_subcateg_detail" class="modal fade" role="dialog">
+  	<div class="modal-dialog">
+
+    <!-- Modal content-->
+    	<div class="modal-content">
+      		<div class="modal-header">
+        		<button type="button" class="close" data-dismiss="modal">&times;</button>
+        		<h4 class="modal-title" id=""></h4>
+      		</div>
+      		<div class="modal-body">
+	        	<form id="modal_edit_itemsubcategory_form" class="form-horizontal" action="{% url 'allrestaurants:save_edited_itemsubcategory'%}" method="post" autocomplete="off">
+				{% csrf_token %}
+				<div class="row form-group">
+						<div class="col-xs-4">
+							<label class="left pull-right" for="modal_name">Subcategory Name:</label>
+						</div>
+						<div class="col-xs-8" >
+							<input type="text" class="form-control " id="modal_name" name="subcategory_name" required autofocus>
+						</div>
+					</div>
+					
+					<div class="row form-group">
+						<div class="col-xs-4">
+							<label class=" left pull-right " for="modal_disc">Description:</label>
+						</div>
+						<div class="col-xs-8">
+							<input type="text" class="form-control " id="modal_disc" name="description" >
+						</div>						
+					</div>	
+					<!-- {% if not categ_name.is_vegetarian and not categ_name.is_nonvegetarian %}
+					<div class="row form-group">
+						<div class="col-xs-6  " >
+							<div class="pull-right">
+			  					<label for="modal_checkbox1" class="left">	Veg: <input id="modal_checkbox1" class="right" type="checkbox" name="subcategory_type" value="veg" ></label>
+				 				</div>
+						</div>
+						<div class="col-xs-6  " >
+							<div class="pull-right">
+			  					<label for="modal_checkbox11" class="left"> NonVeg: <input id="modal_checkbox11" class="right" type="checkbox" name="subcategory_type"  value="nonveg"></label>
+				 				</div>
+						</div>												
+					</div>
+					{% endif %} -->
+					<div class="row form-group">
+						<div class="col-xs-12 text-center">
+								<input type="hidden" name="modalpost">
+								
+								<button type="button" class="btn btn-danger pull-right modal-btn">Deactivate</button>
+								&nbsp;
+								<button type="submit" class="btn btn-info pull-right modal-btn">Submit</button>
+								
+						</div>
+					</div>	
+				</form>	
+      		</div>
+      		<div class="modal-footer">
+        		<button type="button" id="close_modal" class="btn btn-default" data-dismiss="modal">Close</button>
+      		</div>
+    	</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+ <script >
+  	var form = $('#subcategform');
+  
+  	form.submit(function(e){
+	    // console.log('hi');
+	    e.preventDefault();
+	    /*url=form.attr('action');
+	    $.post(url,json_data,function(data){
+	      alert(data)
+
+	    });*/
+	    $.ajax({
+	      	url: form.attr('action'),
+	      	type: form.attr('method'),
+	      	data: form.serialize(),
+	      	dataType: 'json',
+	      	success:function(data){
+	        	// console.log(data['data']);
+	        	$("#subcategform").trigger('reset');
+	      	}
+// (WARNING!!!! don't use semicolon)
+	    }).done(function(){
+		    $.ajax({
+		      	url: '{% url 'allrestaurants:add_itemsubcategory_table_page' pk=categ_id %}',
+		      	success: function(data) {
+		      	$('#plz_update').html(data);
+		      	// console.log(data);
+		      	Bindeditbuttonclick()
+		      	}
+		    });	  
+	    });
+    });
+    function Bindeditbuttonclick(){
+ 		$(".edit-detail").click(function(e){
+	 		$("#edit_subcateg_detail").modal('show');
+	 		$('.modal').on('shown.bs.modal', function() {
+				$(this).find('[autofocus]').focus();
+			});
+	 		itemsubcategory_id=this.id;		
+	 		url="{% url 'allrestaurants:get_itemsubcategory_detail' %}"
+	    	$.post(url,{'id':itemsubcategory_id},function(data){
+	    		// $("#contact").text(data['data']['contact']);
+	    		// $("#res-name").text(data['data']['res-name']);
+	    		// $("#res_detail").modal('show');
+	    		var jsObject=JSON.parse(data["data"]);
+	    		// console.log(data);
+	    		// console.log(data["data"]);
+	    		// console.log(JSON.parse(data["data"]));
+	    		$('#modal_name').val(jsObject[0]["fields"]["name_of_subcategory"])
+	    		// if(jsObject[0]["fields"]["is_vegetarian"]){
+	    		// 	// console.log("hi");
+	    		// 	$('#modal_checkbox1').prop('checked',true)
+	    		// }else{
+	    		// 	$('#modal_checkbox1').prop('checked',false)
+	    		// }
+	    		// if(jsObject[0]["fields"]["is_nonvegetarian"]){
+	    		// 	// console.log("hi");
+	    		// 	$('#modal_checkbox11').prop('checked',true)
+	    		// }else{
+	    		// 	$('#modal_checkbox11').prop('checked',false)
+	    		// }
+	    		
+	    		$('#modal_disc').val(jsObject[0]["fields"]["description"])
+
+	        });	
+	 		// console.log(itemsubcategory_id);
+	 		var modalform = $('#modal_edit_itemsubcategory_form');
+		  	modalform.submit(function(e){
+		  		e.preventDefault();
+		  		var lol=modalform.serialize()+"&subcategory_uniquecode="+itemsubcategory_id;
+		  	// 	console.log(lol);
+		 		// console.log(modalform.serialize());
+		 		// console.log(modalform.serialize().split('&'));
+		 		// jsonArray=[];
+		 		// $.each(modalform.serialize().split('&'), function (key, value) {
+
+	    //             item = {};
+	    //             var splittedValue = value.split('=');               
+	    //             item["name"] = splittedValue[0];
+	    //             item["value"] = splittedValue[1];
+	    //             jsonArray.push(item);
+	    //         });
+
+	   	// 		console.log(jsonArray);
+		 		 		
+		 		$.ajax({
+		 			url: modalform.attr('action'),
+		 			type: modalform.attr('method'),
+		 			data: lol,
+		 			dataType: 'json',
+		 			success:function(data){
+		 				// console.log(data['data']);
+		 				
+		 			}
+		 		}).done(function(){
+			 		$.ajax({
+						url: "{% url 'allrestaurants:add_itemsubcategory_table_page' pk=categ_id %}",
+						success: function(data) {
+						$('#plz_update').html(data);
+						modalform.trigger('reset');
+						$("#close_modal").trigger('click');
+						Bindeditbuttonclick();
+						// console.log(data);
+						}
+					});	
+	 			});
+		 	});
+ 		
+		
+		});
+
+ 	}
+
+ 	$(".edit-detail").click(function(e){
+ 		$("#edit_subcateg_detail").modal('show');
+ 		$('.modal').on('shown.bs.modal', function() {
+			$(this).find('[autofocus]').focus();
+		});
+ 		itemsubcategory_id=this.id;		
+ 		url="{% url 'allrestaurants:get_itemsubcategory_detail' %}"
+    	$.post(url,{'id':itemsubcategory_id},function(data){
+    		// $("#contact").text(data['data']['contact']);
+    		// $("#res-name").text(data['data']['res-name']);
+    		// $("#res_detail").modal('show');
+    		var jsObject=JSON.parse(data["data"]);
+    		// console.log(data);
+    		// console.log(data["data"]);
+    		// console.log(JSON.parse(data["data"]));
+    		$('#modal_name').val(jsObject[0]["fields"]["name_of_subcategory"])
+    		// if(jsObject[0]["fields"]["is_vegetarian"]){
+    		// 	// console.log("hi");
+    		// 	$('#modal_checkbox1').prop('checked',true)
+    		// }else{
+    		// 	$('#modal_checkbox1').prop('checked',false)
+    		// }
+    		// if(jsObject[0]["fields"]["is_nonvegetarian"]){
+    		// 	// console.log("hi");
+    		// 	$('#modal_checkbox11').prop('checked',true)
+    		// }else{
+    		// 	$('#modal_checkbox11').prop('checked',false)
+    		// }
+    		
+    		$('#modal_disc').val(jsObject[0]["fields"]["description"])
+
+        });	
+ 		// console.log(itemsubcategory_id);
+ 		var modalform = $('#modal_edit_itemsubcategory_form');
+	  	modalform.submit(function(e){
+	  		e.preventDefault();
+	  		var lol=modalform.serialize()+"&subcategory_uniquecode="+itemsubcategory_id;
+	  	// 	console.log(lol);
+	 		// console.log(modalform.serialize());
+	 		// console.log(modalform.serialize().split('&'));
+	 		// jsonArray=[];
+	 		// $.each(modalform.serialize().split('&'), function (key, value) {
+
+    //             item = {};
+    //             var splittedValue = value.split('=');               
+    //             item["name"] = splittedValue[0];
+    //             item["value"] = splittedValue[1];
+    //             jsonArray.push(item);
+    //         });
+
+   	// 		console.log(jsonArray);
+	 		 		
+	 		$.ajax({
+	 			url: modalform.attr('action'),
+	 			type: modalform.attr('method'),
+	 			data: lol,
+	 			dataType: 'json',
+	 			success:function(data){
+	 				// console.log(data['data']);
+	 				
+	 			}
+	 		}).done(function(){
+		 		$.ajax({
+					url: "{% url 'allrestaurants:add_itemsubcategory_table_page' pk=categ_id %}",
+					success: function(data) {
+					$('#plz_update').html(data);
+					modalform.trigger('reset');
+					$("#close_modal").trigger('click');
+					Bindeditbuttonclick();
+					// console.log(data);
+					}
+				});	
+ 			});
+	 	});
+		
+	
+	});
+
+ // 	$("#checkbox1,#modal_checkbox1").on('click',function(){
+	// 	// console.log("hi")
+	// 	if($("#checkbox11,#modal_checkbox11").is(':checked')){
+	// 			$("#checkbox11,#modal_checkbox11").prop('checked', false);
+	// 		}		
+	// });
+
+	// $("#checkbox11,#modal_checkbox11").on('click',function(){
+	// 	// console.log("hi")
+	// 	if($("#checkbox1,#modal_checkbox1").is(':checked')){
+	// 			$("#checkbox1,#modal_checkbox1").prop('checked', false);
+	// 		}		
+	// });
+
+ </script>
+{% endblock %}

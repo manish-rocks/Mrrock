@@ -1,0 +1,59 @@
+{% extends 'allrestaurants/base.html' %} {% block title %}Applications{% endblock %} {% block link %} {% endblock %} {% block content %}
+<style type="text/css">
+.jumbotron {
+    background-color: white;
+}
+
+p {
+    margin: 10px 0px !important;
+}
+</style>
+<div class="container">
+    <div class="jumbotron">
+        <h2>Total Accounts- {{accounts|length}}</h2>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                    <th>Restaurant</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts %}
+                <tr>
+                    <td>{{account.first_name|title}} {{account.last_name|title}}</td>
+                    <td>{{account.role}}</td>
+                    <td>{{account.email}}</td>
+                    <td>{{account.mobile}}</td>
+                    <td>{{account.restaurant.name_of_restaurant|upper}}</td>
+                    <td>{% if account.active %}
+                        <button class="btn btn-success btn-sm"> Active</button>
+                        {% else %}
+                        <button class="btn btn-danger btn-sm">Deactivated</button>
+                	    {% endif %}
+                	</td>
+                    <td>
+                    	<a href="{% url 'allrestaurants:edit_account' pk=account.loginid %}">
+                    		<span class="glyphicon glyphicon-pencil" style="cursor:pointer" data-toggle="tooltip" title="Edit Account!"></span>
+                    	</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %} 
+
+{% block script %}
+<script>
+$(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}

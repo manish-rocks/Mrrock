@@ -1,0 +1,47 @@
+<table class="table table-striped" >
+	<thead>
+		<tr class="row">
+			<th class="col-sm-1 text-center" >Sr No.</th>
+			<th class="col-sm-5">Category Name</th>
+			<th class="col-sm-6"></th>
+			<!-- <th class="col-sm-0"></th> -->
+		</tr>
+	</thead>
+	<tbody>
+	{% for cat in categ_list %}
+		<tr class="row">
+			<td class="col-sm-1 text-center" style= "vertical-align:middle;" >
+                {{ forloop.counter }} {# starting index 1 #}            
+            </td>
+			<td class="col-sm-5 " style= "vertical-align:middle;"><h4 class="">{{ cat }}</h4></td>
+			<td class="col-sm-6" style= "vertical-align:middle;">
+				<span class="pull-right" style="padding-top: 6px">
+
+					{% if cat.has_subcategory %}
+					<a href="{% url 'allrestaurants:add_itemsubcategory_page' pk=cat.unique_id %}" class="btn btn-info btn-sm ">Add Subcategory</a>
+					{% else %}
+					<a href="{% url 'allrestaurants:add_items_page' pk=cat.unique_id %}" class="btn btn-info btn-sm ">Add Items</a>
+					{% endif %}
+					<button type="button" class="btn btn-info btn-sm edit-detail" data-toggle="modal" id="{{ cat.unique_id }}">Edit</button>
+				</span>
+			</td>
+			<!-- <td class="col-sm-0" >
+			{% if cat.is_vegetarian or cat.is_nonvegetarian %}
+				{% if cat.is_vegetarian %}
+				<span class="veg col-sm-1 pull-right" style="padding-top: 10px">
+				   <i class="fa fa-square-o icon-stack-2x text-center"></i>
+				   <i class=" fa fa-circle icon-stack-1x text-center"></i>
+				</span >
+				{% else %}
+				<span class="nonveg col-sm-1 pull-right" style="padding-top: 10px">
+				   <i class="fa fa-square-o icon-stack-2x text-center"></i>
+				   <i class=" fa fa-circle icon-stack-1x text-center"></i>
+				</span>
+				{% endif %}
+			{% endif %}
+			</td> -->					
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
