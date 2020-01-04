@@ -6,7 +6,7 @@ from django.urls import path
 urlpatterns = [
  
   
-  path('LHD BASKET/',views.basket,name='Big_basket'),
+  path('LHD BASKET/',views.basket,name='Big_basket_one_more_change_after_merge'),
   #this byme
   path('dashboard/',views.dashboard,name = 'Dashboard'),
   path('applicationsetup/',views.application_setup,name = 'Application-Setup'),
