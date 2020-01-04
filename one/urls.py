@@ -12,7 +12,7 @@ urlpatterns = [
   path('applicationsetup/',views.application_setup,name = 'Application-Setup'),
   path('neworder/',views.new_order,name = 'New-Order-with-manish'),
   path('checkonlineorder/',views.check_online_order,name ='Check-Online-Order'),
-  path('tracking/',views.tracking,name='Tracking'),
+  path('tracking/',views.tracking,name='Tracking_is_changed')SSSSSSS,
   path('reports/',views.reports,name='Reports'),
   path('counter/',views.counter,name='Counter'),
   
