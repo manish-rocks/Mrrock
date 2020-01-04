@@ -2,11 +2,6 @@ from django.shortcuts import render
 
 # Create your views here.
 from .models import (Cake_Category)
-def home(request):
-    return render(request,"user-page/home.html",{})
-
-def about(request):
-    return render(request,"user-page/about.html",{})
 
 def contact(request):
     return render(request,"user-page/contact.html",{})
