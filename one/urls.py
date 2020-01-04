@@ -15,6 +15,6 @@ urlpatterns = [
   path('tracking/',views.tracking,name='Tracking'),
   path('reports/',views.reports,name='Reports'),
   path('counter/',views.counter,name='Counter'),
-  path('logout/',views.logout,name='Logout'),
+  
 
 ]
