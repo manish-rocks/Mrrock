@@ -3,11 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 from .models import (Cake_Category)
 
-def contact(request):
-    return render(request,"user-page/contact.html",{})
 
-def food(request):
-    return render(request,"user-page/LHD FOOD.html",{})
 
 def basket(request):
     return render(request,"user-page/LHD BASKET.html",{})

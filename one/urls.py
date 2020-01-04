@@ -5,8 +5,7 @@ from django.urls import path
 
 urlpatterns = [
  
-  path('contact/',views.contact,name = 'contact'),
-  path('LHD FOOD/',views.food,name = 'food'),
+  
   path('LHD BASKET/',views.basket,name='basket'),
   #this byme
   path('dashboard/',views.dashboard,name = 'Dashboard'),
